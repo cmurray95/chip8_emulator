@@ -31,15 +31,21 @@ class crisp8 {
 	};
 		
 public:
+	//Input for chip 8 uses 16 button keypad
+	unsigned char key[KEY_LENGTH];
+	//Graphics displayed as 64x32 array of pixels
+	unsigned char graphics[DISPLAY_LENGTH];
+
 	crisp8();
 	~crisp8();
 	void cycle();
 	void init();
+	bool loadProgram(const char*);
 private:
 	//Chip 8 opcodes are 2 bytes long, hence unsigned short is suitable
 	unsigned short opcode;
 	//Chip 8 can store 4K of memory
-	unsigned char memory[MEMORY_LENGTH];
+	unsigned char mem[MEMORY_LENGTH];
 	//Chip 8 contains 15 8-bit registers + carry flag labelled V0 through V£
 	unsigned char V[REGISTER_LENGTH];
 	//Index register and Program Counter - Value range: 0x000 - 0xFFF
@@ -48,19 +54,15 @@ private:
 	unsigned short stack[STACK_LENGTH];
 	//Stack pointer
 	unsigned short sp;
-	//Input for chip 8 uses 16 button keypad
-	unsigned char key[KEY_LENGTH];
 	//Cycle timers
 	unsigned char delay_timer;
 	unsigned char sound_timer;
-	//Graphics displayed as 64x32
-	unsigned char graphics[DISPLAY_LENGTH];
 	//Sets if screen is to be redrawn
 	bool drawFlag = false;
+	//Check for keypress
+	bool keyPressed = false;
 
-	void decode(unsigned short&);
-	void execute();
+	void decode(unsigned short);
 	void initFontset();
 	void clearScreen();
-	bool loadProgram(const char*);
 };
