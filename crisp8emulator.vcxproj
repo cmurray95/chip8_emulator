@@ -132,6 +132,9 @@
   <ItemGroup>
     <ClInclude Include="crisp8.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Downloads\test_opcode.ch8" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

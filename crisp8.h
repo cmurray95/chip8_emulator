@@ -35,6 +35,8 @@ public:
 	unsigned char key[KEY_LENGTH];
 	//Graphics displayed as 64x32 array of pixels
 	unsigned char graphics[DISPLAY_LENGTH];
+	//Sets if screen is to be redrawn
+	bool drawFlag = false;
 
 	crisp8();
 	~crisp8();
@@ -57,8 +59,6 @@ private:
 	//Cycle timers
 	unsigned char delay_timer;
 	unsigned char sound_timer;
-	//Sets if screen is to be redrawn
-	bool drawFlag = false;
 	//Check for keypress
 	bool keyPressed = false;
 

@@ -22,7 +22,7 @@ void crisp8::cycle() {
 
 void crisp8::clearScreen() {
 	for (int i = 0; i < DISPLAY_LENGTH; ++i) {
-		graphics[i] = 0;
+		graphics[i] = 0x0;
 	}
 }
 
@@ -79,7 +79,7 @@ void crisp8::decode(unsigned short opcode) {
 		else {
 			pc += 2;
 		}
-		printf("Opcode: 0x3XNN\n Variable opcode: %x\n", opcode);
+		printf("Opcode: 0x3XNN\n");
 		break;
 	//0x4XNN -> skip instruction if: VX != NN
 	case 0x4000:
@@ -94,7 +94,7 @@ void crisp8::decode(unsigned short opcode) {
 		break;
 	//0x5XY0 -> skip instruction if: VX == VY
 	case 0x5000:
-		if (V[(opcode & 0x0F00) >> 8] == V[opcode & 0x00F0]) {
+		if (V[(opcode & 0x0F00) >> 8] == V[opcode & 0x00F0 >> 4]) {
 			pc += 4;
 		}
 		else {
@@ -133,12 +133,14 @@ void crisp8::decode(unsigned short opcode) {
 		//0x8XY2 -> Set VX to (VY AND VY)
 		case 0x0002:
 			V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+			pc += 2;
 			printf("Opcode: 0x8XY2\n");
 			break;
 		//0x8XY3 -> Set VX to (VX XOR VY)
 		case 0x0003:
 			V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
 			printf("Opcode: 0x8XY3\n");
+			pc += 2;
 			break;
 		//0x8XY4 -> Add VY to VX. VF = 1 if carry
 		case 0x0004:
@@ -272,7 +274,8 @@ void crisp8::decode(unsigned short opcode) {
 		drawFlag = true;
 		pc += 2;
 	}
-		break;
+	break;
+
 	case 0xE000:
 		switch (opcode & 0x00FF) {
 		//0xEX9E -> Skip next instruction if key at VX is pressed
@@ -308,7 +311,6 @@ void crisp8::decode(unsigned short opcode) {
 		case 0x0007:
 			V[(opcode & 0x0F00) >> 8] = delay_timer;
 			pc += 2;
-			printf("Opcode: 0xFX07\n");
 			break;
 		//0xFX0A -> Wait for key press then store in VX
 		case 0x000A:
@@ -343,6 +345,12 @@ void crisp8::decode(unsigned short opcode) {
 			break;
 		//0xFX1E -> Add VX to I
 		case 0x001E:
+			if (I + V[(opcode & 0xF00) >> 8] > 0xFFF) {
+				V[0xF] = 1;
+			}
+			else {
+				V[0xF] = 0;
+			}
 			I += V[(opcode & 0x0F00) >> 8];
 			pc += 2;
 			printf("Opcode: 0xFX1E\n");
@@ -356,7 +364,14 @@ void crisp8::decode(unsigned short opcode) {
 		//0xFX33 -> Take decimal representation of VX, store first digit in I, second in i+1, last in i+2
 		//			E.G. 142 == i = 1, [i+1] = 4, [i+2] = 2
 		case 0x0033:
-			printf("Code not yet implemented: %s\n", "0xFX33");
+			//Retrieve decimal variations and set appropiately
+			//Sets first digit
+			mem[I] = V[(opcode & 0x0F00) >> 8] / 100;
+			//Sets second digit
+			mem[++I] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+			//Sets third digit
+			mem[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+			pc += 2;
 			break;
 		//0xFX55 -> Store V0 through VX into memory starting at address I
 		case 0x0055:
@@ -381,6 +396,19 @@ void crisp8::decode(unsigned short opcode) {
 			printf("Opcode: 0xFX65\n");
 			break;
 		}
+	default:
+		printf("Unknown opcode: 0x%x\n", opcode);
+	}
+
+	//Update timers
+	if (delay_timer > 0)
+		--delay_timer;
+
+	if (sound_timer > 0)
+	{
+		if (sound_timer == 1)
+			printf("Noise placeholder!!\n");
+		--sound_timer;
 	}
 }
 
