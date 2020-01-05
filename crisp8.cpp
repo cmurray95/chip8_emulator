@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <chrono>
+#include <thread>
+
+using namespace std::this_thread; // Allows for sleep, used to delay timer
+using namespace std::chrono_literals; //Offers time notation (ms, s, h)
 
 crisp8::crisp8()
 {
@@ -110,7 +115,7 @@ void crisp8::decode(unsigned short opcode) {
 		break;
 	//0x7XNN -> Add NN to VX
 	case 0x7000:
-		V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+		V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
 		pc += 2;
 		printf("Opcode: 0x7XNN\n");
 		break;
@@ -336,6 +341,7 @@ void crisp8::decode(unsigned short opcode) {
 			delay_timer = V[(opcode & 0x0F00) >> 8];
 			pc += 2;
 			printf("Opcode: 0xFX15\n");
+			printf("Delay timer!!!!!!! %x\n", delay_timer);
 			break;
 		//0xFX18 -> Set sound timer to VX
 		case 0x0018:
@@ -400,9 +406,11 @@ void crisp8::decode(unsigned short opcode) {
 		printf("Unknown opcode: 0x%x\n", opcode);
 	}
 
+	std::chrono::milliseconds timeDelay = 1ms;
 	//Update timers
-	if (delay_timer > 0)
+	if (delay_timer > 0) {
 		--delay_timer;
+	}
 
 	if (sound_timer > 0)
 	{
@@ -410,6 +418,8 @@ void crisp8::decode(unsigned short opcode) {
 			printf("Noise placeholder!!\n");
 		--sound_timer;
 	}
+	std::this_thread::sleep_for(timeDelay);
+
 }
 
 void crisp8::init() {
@@ -451,7 +461,7 @@ void crisp8::init() {
 	drawFlag = true;
 
 	//Seed timer
-	srand(time(nullptr));
+	//srand(time(nullptr));
 
 }
 
@@ -509,7 +519,7 @@ bool crisp8::loadProgram(const char* file) {
 		printf("File too big to be read!");
 		return false;
 	}
-	//Free buffer
+	//Clean up
 	fclose(pFile);
 	free(buffer);
 

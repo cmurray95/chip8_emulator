@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	//Initialize texture
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, 64, 32);
 
-	if (!emulator.loadProgram("pong2.c8")) {
+	if (!emulator.loadProgram("invaders.c8")) {
 		return 1;
 	}
 	while (!quit) {
